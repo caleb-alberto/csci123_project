@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <strings.h>
 #include <vector>
 
 class object {
@@ -30,12 +31,12 @@ public:
     }
 };
 
-bool checkForObj(std::string noun, std::vector<location> room, int current) {
+int checkForObj(std::string noun, std::vector<location> room, int current) {
     std::vector<object> vec = room[current].objects;
-    for (object obj : vec) {
-        if (obj.name == noun) {return true;}
+    for (int x=0; x!=vec.size(); x++) {
+        if (vec[x].name == noun) {return x;}
     }
-    return false;
+    return -1;
 }
 
 void coutObj(std::string noun, std::vector<location> room, int current) {
@@ -47,12 +48,31 @@ void coutObj(std::string noun, std::vector<location> room, int current) {
     }
 }
 
+int checkInv(std::string noun, std::vector<object> inv) {
+    for (int x=0; x!=inv.size(); x++) {
+        if (inv[x].name == noun) { return x; }
+    }
+    return -1;
+}
+
+void get(std::vector<location>& rooms, std::vector<object>& inv, int current, int index) {
+    object buffer = rooms[current].objects[index];
+    rooms[current].objects.erase(rooms[current].objects.begin() + index);
+    inv.push_back(buffer);
+}
+
+void drop(std::vector<location>& rooms, std::vector<object>& inv, int current, int index) {
+    object buffer = inv[index];
+    inv.erase(inv.begin() + index);
+    rooms[current].objects.push_back(buffer);
+}
+
 void parseinput(std::string verb, std::string noun, std::vector<location>& rooms, std::vector<object>& inventory, int& current) {
     if (verb == "look"){
         if (noun == "look") {
             rooms[current].lookMethod();
         }
-        else if (checkForObj(noun, rooms, current) == true) {
+        else if (checkForObj(noun, rooms, current) != -1) {
              coutObj(noun, rooms, current);
         }
         else {
@@ -60,8 +80,21 @@ void parseinput(std::string verb, std::string noun, std::vector<location>& rooms
         }
     }
     else if (verb == "get") {
+        int index = checkForObj(noun, rooms, current);
+        if (index != 0) {
+            get(rooms, inventory, current, index);
+            std::cout << "you picked up: \n" << noun << std::endl;
+        }
+        else {
+            std::cout << "you cant do that\n";
+        }
     }
     else if (verb == "drop") {
+        int index = checkInv(noun, inventory);
+        if (index != -1) {
+            drop(rooms, inventory, current, index);
+            std::cout << "you dropped:\n" << noun << std::endl;
+        }
     }
     else if (verb == "inventory") {
     }
