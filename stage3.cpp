@@ -27,7 +27,7 @@ public:
             std::cout << "on the ground is a " << obj.name << std::endl;
     }
     void goMethod() {
-        std::cout << go;
+        std::cout << go << std::endl;
     }
 };
 
@@ -81,7 +81,7 @@ void parseinput(std::string verb, std::string noun, std::vector<location>& rooms
     }
     else if (verb == "get") {
         int index = checkForObj(noun, rooms, current);
-        if (index != 0) {
+        if (index != -1) {
             get(rooms, inventory, current, index);
             std::cout << "you picked up: \n" << noun << std::endl;
         }
@@ -97,25 +97,51 @@ void parseinput(std::string verb, std::string noun, std::vector<location>& rooms
         }
     }
     else if (verb == "inventory") {
+        std::cout << "you have:\n";
+        if (inventory.size()!=0) {
+            for (object obj : inventory) {
+                std::cout << obj.name << std::endl;
+            }
+        }
+        else {
+            std::cout << "nothing\n";
+        }
     }
     else if (verb == "go") {
+        if (noun == "go") {
+            rooms[current].goMethod();
+        }
+        else {
+            if (noun == "up" && current != 2) {
+                current++;
+                std::cout << "you went up\n";
+            }
+            else if (noun == "down" && current != 0) {
+                current--;
+                std::cout << "you went down\n";
+            }
+            else {
+                std::cout << "you cant do that\n";
+            }
+        }
     }
     else {
+        std::cout << "you cant do that\n";
     }
 }
 
 int main() {
-    object key("key", "KEYINFO");
-    object sword("sword", "SWORDINFO");
-    object telescope("telescope", "TELESCOPE");
-    location deck("LOOK", "GO");
-    location brig("LOOK", "GO");
-    location crow("LOOK", "GO");
+    object key("key", "its a rusty old key, it seems to be for the brig");
+    object sword("sword", "a pirate's sword, it's pretty dull and wouldn't do much damage");
+    object telescope("telescope", "an old telescope, it extends pretty far but is quite blurry");
+    location deck("this is the deck, there's cannons, the helm, and the mast ", "you can go down\nyou can go up");
+    location brig("this is the brig, it's bared up so that prisoners can't get out ", "you can go up");
+    location crow("this is the crow's nest, what surrounds you is the ocean blue ", "you can go down");
     deck.objects = { sword };
     brig.objects = { key };
     crow.objects = { telescope };
 
-    std::vector<location> rooms = { deck, brig, crow };
+    std::vector<location> rooms = { brig, deck, crow };
     std::vector<object> inventory;
     int currentRoom = 1;
 
