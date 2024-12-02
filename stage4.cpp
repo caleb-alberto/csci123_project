@@ -1,6 +1,8 @@
 #include <iostream>
+#include <ostream>
 #include <string>
 #include <vector>
+#include <fstream>
 
 class object {
 public:
@@ -9,17 +11,17 @@ public:
     object(std::string name, std::string info): name(name), info(info) {}
 };
 
-class Key : public object { 
+class Key : public object {
 public:
     Key(): object("key", "its a rusty old key, it seems to be for the brig") {}
 };
 
-class Sword : public object { 
+class Sword : public object {
 public:
     Sword(): object("sword", "a pirate's sword, it's pretty dull and wouldn't do much damage") {}
 };
 
-class Telescope : public object { 
+class Telescope : public object {
 public:
     Telescope(): object("telescope", "an old telescope, it extends pretty far but is quite blurry") {}
 };
@@ -29,7 +31,7 @@ public:
     std::string look;
     std::string go;
     std::vector<object*> objects;
-    
+
     //constructor
     location(std::string look, std::string go) :
         look(look), go(go), objects() {}
@@ -144,6 +146,58 @@ void parseinput(std::string verb, std::string noun, std::vector<location>& rooms
     }
 }
 
+void save(std::vector<location> rooms, std::vector<object*> inventory) {
+    std::ofstream room1("room1.txt");
+    std::ofstream room2("room2.txt");
+    std::ofstream room3("room3.txt");
+    std::ofstream inventorytxt("inventory.txt");
+
+    for (object* obj : rooms[0].objects)
+        room1 << obj->name << std::endl;
+    for (object* obj : rooms[1].objects)
+        room2 << obj->name << std::endl;
+    for (object* obj : rooms[2].objects)
+        room3 << obj->name << std::endl;
+    for (object* obj : inventory)
+        inventorytxt << obj->name << std::endl;
+}
+
+void load(std::vector<location>& rooms, std::vector<object*>& inventory, std::vector<object*>& gameobjects) {
+    for (int i = 0; i<3; i++)
+        rooms[i].objects.clear();
+    inventory.clear();
+    std::ifstream room1("room1.txt");
+    std::ifstream room2("room2.txt");
+    std::ifstream room3("room3.txt");
+    std::ifstream inventorytxt("inventory.txt");
+
+    std::string line;
+    while (std::getline(room1, line)) {
+        for (object* obj : gameobjects) {
+            if (line == obj->name)
+                rooms[0].objects.push_back(obj);
+        }
+    }
+    while (std::getline(room2, line)) {
+        for (object* obj : gameobjects) {
+            if (line == obj->name)
+                rooms[1].objects.push_back(obj);
+        }
+    }
+    while (std::getline(room3, line)) {
+        for (object* obj : gameobjects) {
+            if (line == obj->name)
+                rooms[2].objects.push_back(obj);
+        }
+    }
+    while (std::getline(inventorytxt, line)) {
+        for (object* obj : gameobjects) {
+            if (line == obj->name)
+                inventory.push_back(obj);
+        }
+    }
+}
+
 int main() {
     location deck("this is the deck, there's cannons, the helm, and the mast ", "you can go down\nyou can go up");
     location brig("this is the brig, it's bared up so that prisoners can't get out ", "you can go up");
@@ -157,6 +211,7 @@ int main() {
 
     std::vector<location> rooms = { brig, deck, crow };
     std::vector<object*> inventory;
+    std::vector<object*> gameobjects = { sword, key, telescope };
     int currentRoom = 1;
 
     std::cout << "this is the deck, there's cannons, the helm, and the mast \nthere's a sword on the ground" << std::endl;
@@ -178,7 +233,16 @@ int main() {
                 delete obj;
             }
             break;
-        } else {
+        }
+        else if (verb == "save") {
+            save(rooms, inventory);
+            std::cout << "Game saved\n";
+        }
+        else if (verb == "load") {
+            load(rooms, inventory, gameobjects);
+            std::cout << "Game loaded\n";
+        }
+        else {
             parseinput(verb, noun, rooms, inventory, currentRoom);
         }
     }
