@@ -162,7 +162,17 @@ void save(std::vector<location> rooms, std::vector<object*> inventory) {
         inventorytxt << obj->name << std::endl;
 }
 
-void load(std::vector<location>& rooms, std::vector<object*>& inventory, std::vector<object*>& gameobjects) {
+void pushFromFile(std::ifstream& file, std::vector<object*> obj_vec, std::vector<object*>& gamestate_vec) {
+    std::string line;
+    while (std::getline(file, line)) {
+        for (object* obj : obj_vec) {
+            if (line == obj->name)
+                gamestate_vec.push_back(obj);
+        }
+    }
+}
+
+void load(std::vector<location>& rooms, std::vector<object*>& inventory, std::vector<object*> gameobjects) {
     for (int i = 0; i<3; i++)
         rooms[i].objects.clear();
     inventory.clear();
@@ -172,30 +182,10 @@ void load(std::vector<location>& rooms, std::vector<object*>& inventory, std::ve
     std::ifstream inventorytxt("inventory.txt");
 
     std::string line;
-    while (std::getline(room1, line)) {
-        for (object* obj : gameobjects) {
-            if (line == obj->name)
-                rooms[0].objects.push_back(obj);
-        }
-    }
-    while (std::getline(room2, line)) {
-        for (object* obj : gameobjects) {
-            if (line == obj->name)
-                rooms[1].objects.push_back(obj);
-        }
-    }
-    while (std::getline(room3, line)) {
-        for (object* obj : gameobjects) {
-            if (line == obj->name)
-                rooms[2].objects.push_back(obj);
-        }
-    }
-    while (std::getline(inventorytxt, line)) {
-        for (object* obj : gameobjects) {
-            if (line == obj->name)
-                inventory.push_back(obj);
-        }
-    }
+    pushFromFile(room1, gameobjects, rooms[0].objects);
+    pushFromFile(room2, gameobjects, rooms[1].objects);
+    pushFromFile(room3, gameobjects, rooms[2].objects);
+    pushFromFile(inventorytxt, gameobjects, inventory);
 }
 
 int main() {
